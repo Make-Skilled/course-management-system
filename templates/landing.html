@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to EduLMS{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-blue-600 to-purple-700 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-20">
+        <div class="text-center">
+            <h1 class="text-5xl font-bold mb-6">Welcome to EduLMS</h1>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Your comprehensive learning management system for online education. 
+                Create, manage, and deliver courses with ease.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="{{ url_for('student_register') }}" 
+                   class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                    Get Started as Student
+                </a>
+                <a href="{{ url_for('admin_login') }}" 
+                   class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                    Admin Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 py-16">
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-6">
+            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-book text-blue-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Rich Course Content</h3>
+            <p class="text-gray-600">Create and organize comprehensive courses with video lessons, assignments, and resources.</p>
+        </div>
+        
+        <div class="text-center p-6">
+            <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-users text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Student Management</h3>
+            <p class="text-gray-600">Track student progress, manage enrollments, and provide personalized learning experiences.</p>
+        </div>
+        
+        <div class="text-center p-6">
+            <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Analytics & Insights</h3>
+            <p class="text-gray-600">Monitor course performance and student engagement with detailed analytics.</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-gray-100 py-16">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-8">Ready to Start Learning?</h2>
+        <p class="text-lg text-gray-600 mb-8">Join thousands of students already learning on our platform</p>
+        <div class="flex justify-center space-x-4">
+            <a href="{{ url_for('student_register') }}" 
+               class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">
+                Sign Up Now
+            </a>
+            <a href="{{ url_for('student_login') }}" 
+               class="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition duration-300">
+                Already a Student?
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

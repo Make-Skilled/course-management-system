@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Course Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">{{ course.title }}</h1>
+                <p class="text-gray-600 mt-1">{{ course.instructor }}</p>
+            </div>
+            <a href="{{ url_for('student_dashboard') }}" 
+               class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                Back to Dashboard
+            </a>
+        </div>
+        <p class="text-gray-700 mt-3">{{ course.description }}</p>
+    </div>
+
+    {% if course.lessons %}
+    <div class="grid lg:grid-cols-4 gap-6">
+        <!-- Lessons Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow sticky top-4">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Course Lessons</h2>
+                    <p class="text-sm text-gray-500">{{ course.lessons|length }} lessons</p>
+                </div>
+                
+                <div class="max-h-96 overflow-y-auto">
+                    {% for lesson in course.lessons %}
+                    <div class="lesson-item border-b border-gray-100 hover:bg-gray-50 cursor-pointer p-4" 
+                         onclick="loadVideo('{{ lesson.video_url }}', '{{ lesson.title }}')"
+                         data-lesson-index="{{ loop.index0 }}">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <span class="text-blue-600 text-sm font-medium">{{ loop.index }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-medium text-gray-900 truncate">{{ lesson.title }}</h3>
+                                {% if lesson.duration %}
+                                <p class="text-xs text-gray-500">{{ lesson.duration }} minutes</p>
+                                {% endif %}
+                            </div>
+                            <i class="fas fa-play text-gray-400 text-sm"></i>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Player Section -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow">
+                <!-- Video Player -->
+                <div class="aspect-w-16 aspect-h-9 bg-black rounded-t-lg">
+                    <div id="video-container" class="w-full h-96 bg-gray-900 rounded-t-lg flex items-center justify-center">
+                        <div id="video-placeholder" class="text-center text-white">
+                            <i class="fas fa-play-circle text-6xl mb-4 opacity-50"></i>
+                            <p class="text-lg">Select a lesson to start watching</p>
+                            <p class="text-sm opacity-75">Choose from the lessons in the sidebar</p>
+                        </div>
+                        <iframe id="video-player" 
+                                class="w-full h-full rounded-t-lg hidden" 
+                                frameborder="0" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+                
+                <!-- Video Info -->
+                <div class="p-6">
+                    <div id="current-lesson-info" class="hidden">
+                        <h2 id="current-lesson-title" class="text-xl font-semibold text-gray-900 mb-2"></h2>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                            <span id="current-lesson-number"></span>
+                            <span id="current-lesson-duration"></span>
+                        </div>
+                    </div>
+                    
+                    <div id="default-info">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-2">Welcome to {{ course.title }}</h2>
+                        <p class="text-gray-600 mb-4">
+                            This course contains {{ course.lessons|length }} lessons. 
+                            Select a lesson from the sidebar to begin your learning journey.
+                        </p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                            <span><i class="fas fa-user mr-1"></i>{{ course.instructor }}</span>
+                            <span><i class="fas fa-calendar mr-1"></i>{{ course.created_at.strftime('%B %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="mt-4 flex justify-between">
+                <button id="prev-lesson" 
+                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        onclick="navigateLesson(-1)" disabled>
+                    <i class="fas fa-chevron-left mr-2"></i>Previous Lesson
+                </button>
+                
+                <button id="next-lesson" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        onclick="navigateLesson(1)" disabled>
+                    Next Lesson<i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Lessons State -->
+    <div class="bg-white rounded-lg shadow p-12 text-center">
+        <i class="fas fa-video text-gray-300 text-6xl mb-4"></i>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-2">No lessons available yet</h2>
+        <p class="text-gray-600 mb-6">This course is still being prepared. Check back soon for new lessons!</p>
+        <a href="{{ url_for('student_dashboard') }}" 
+           class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition duration-300">
+            Browse Other Courses
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+let currentLessonIndex = -1;
+const lessons = {{ course.lessons | tojson }};
+
+function loadVideo(videoUrl, lessonTitle) {
+    const videoContainer = document.getElementById('video-container');
+    const videoPlayer = document.getElementById('video-player');
+    const videoPlaceholder = document.getElementById('video-placeholder');
+    const currentLessonInfo = document.getElementById('current-lesson-info');
+    const defaultInfo = document.getElementById('default-info');
+    
+    // Find current lesson index
+    currentLessonIndex = lessons.findIndex(lesson => lesson.video_url === videoUrl);
+    
+    // Update video player
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+        // Handle YouTube URLs
+        let embedUrl = videoUrl;
+        if (videoUrl.includes('watch?v=')) {
+            const videoId = videoUrl.split('watch?v=')[1].split('&')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        } else if (videoUrl.includes('youtu.be/')) {
+            const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        }
+        videoPlayer.src = embedUrl;
+    } else {
+        videoPlayer.src = videoUrl;
+    }
+    
+    // Show video player, hide placeholder
+    videoPlayer.classList.remove('hidden');
+    videoPlaceholder.classList.add('hidden');
+    
+    // Update lesson info
+    document.getElementById('current-lesson-title').textContent = lessonTitle;
+    document.getElementById('current-lesson-number').innerHTML = `<i class="fas fa-list mr-1"></i>Lesson ${currentLessonIndex + 1} of ${lessons.length}`;
+    
+    const currentLesson = lessons[currentLessonIndex];
+    if (currentLesson.duration) {
+        document.getElementById('current-lesson-duration').innerHTML = `<i class="fas fa-clock mr-1"></i>${currentLesson.duration} minutes`;
+    } else {
+        document.getElementById('current-lesson-duration').innerHTML = '';
+    }
+    
+    // Show current lesson info, hide default
+    currentLessonInfo.classList.remove('hidden');
+    defaultInfo.classList.add('hidden');
+    
+    // Update lesson sidebar highlighting
+    document.querySelectorAll('.lesson-item').forEach((item, index) => {
+        if (index === currentLessonIndex) {
+            item.classList.add('bg-blue-50', 'border-l-4', 'border-blue-500');
+        } else {
+            item.classList.remove('bg-blue-50', 'border-l-4', 'border-blue-500');
+        }
+    });
+    
+    // Update navigation buttons
+    updateNavigationButtons();
+}
+
+function navigateLesson(direction) {
+    const newIndex = currentLessonIndex + direction;
+    if (newIndex >= 0 && newIndex < lessons.length) {
+        const lesson = lessons[newIndex];
+        loadVideo(lesson.video_url, lesson.title);
+    }
+}
+
+function updateNavigationButtons() {
+    const prevButton = document.getElementById('prev-lesson');
+    const nextButton = document.getElementById('next-lesson');
+    
+    if (currentLessonIndex <= 0) {
+        prevButton.disabled = true;
+    } else {
+        prevButton.disabled = false;
+    }
+    
+    if (currentLessonIndex >= lessons.length - 1) {
+        nextButton.disabled = true;
+    } else {
+        nextButton.disabled = false;
+    }
+}
+
+// Auto-load first lesson if available
+window.addEventListener('load', function() {
+    if (lessons.length > 0) {
+        // Optionally auto-load the first lesson
+        // loadVideo(lessons[0].video_url, lessons[0].title);
+    }
+});
+</script>
+{% endblock %}

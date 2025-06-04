@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LMS Platform{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('landing') }}" class="text-2xl font-bold text-blue-600">
+                        <i class="fas fa-graduation-cap mr-2"></i>EduLMS
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.user_type == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                        <a href="{{ url_for('logout') }}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+                    {% elif session.user_type == 'student' %}
+                        <a href="{{ url_for('student_dashboard') }}" class="text-gray-700 hover:text-blue-600">Dashboard</a>
+                        <span class="text-gray-600">Welcome, {{ session.username }}!</span>
+                        <a href="{{ url_for('logout') }}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('admin_login') }}" class="text-gray-700 hover:text-blue-600">Admin</a>
+                        <a href="{{ url_for('student_login') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Student Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="max-w-7xl mx-auto px-4 py-4">
+                    {% for message in messages %}
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2024 EduLMS. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

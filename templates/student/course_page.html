@@ -68,6 +68,10 @@
                                 frameborder="0" 
                                 allowfullscreen>
                         </iframe>
+                        <video id="local-video-player" class="w-full h-full rounded-t-lg hidden" controls>
+                            <source id="local-video-source" src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
                 </div>
                 
@@ -132,6 +136,8 @@ const lessons = {{ course.lessons | tojson }};
 function loadVideo(videoUrl, lessonTitle) {
     const videoContainer = document.getElementById('video-container');
     const videoPlayer = document.getElementById('video-player');
+    const localVideoPlayer = document.getElementById('local-video-player');
+    const localVideoSource = document.getElementById('local-video-source');
     const videoPlaceholder = document.getElementById('video-placeholder');
     const currentLessonInfo = document.getElementById('current-lesson-info');
     const defaultInfo = document.getElementById('default-info');
@@ -151,12 +157,22 @@ function loadVideo(videoUrl, lessonTitle) {
             embedUrl = `https://www.youtube.com/embed/${videoId}`;
         }
         videoPlayer.src = embedUrl;
+        videoPlayer.classList.remove('hidden');
+        localVideoPlayer.classList.add('hidden');
+    } else if (videoUrl.startsWith('/static/videos/')) {
+        // Local video file
+        localVideoSource.src = videoUrl;
+        localVideoPlayer.load();
+        localVideoPlayer.classList.remove('hidden');
+        videoPlayer.classList.add('hidden');
     } else {
+        // Other direct video URLs
         videoPlayer.src = videoUrl;
+        videoPlayer.classList.remove('hidden');
+        localVideoPlayer.classList.add('hidden');
     }
     
     // Show video player, hide placeholder
-    videoPlayer.classList.remove('hidden');
     videoPlaceholder.classList.add('hidden');
     
     // Update lesson info

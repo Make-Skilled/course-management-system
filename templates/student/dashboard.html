@@ -48,7 +48,7 @@
                             {% if course._id|string in enrolled_courses %}
                                 {% for lesson in course.lessons %}
                                     {% if lesson.duration %}
-                                        {% set total_hours = total_hours + (lesson.duration / 60) %}
+                                        {% set total_hours = total_hours + (lesson.duration|float / 60) %}
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}
@@ -86,7 +86,7 @@
                             {% set course_duration = 0 %}
                             {% for lesson in course.lessons %}
                                 {% if lesson.duration %}
-                                    {% set course_duration = course_duration + lesson.duration %}
+                                    {% set course_duration = course_duration + (lesson.duration|float) %}
                                 {% endif %}
                             {% endfor %}
                             {{ course_duration }} min

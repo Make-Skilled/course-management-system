@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 import os
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -17,6 +18,16 @@ courses_collection = db['courses']
 # Admin credentials (static)
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'admin123'
+
+UPLOAD_FOLDER = os.path.join('static', 'videos')
+ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'wmv'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def landing():
@@ -83,23 +94,32 @@ def course_details(course_id):
     return render_template('admin/course_details.html', course=course)
 
 @app.route('/admin/course/<course_id>/add-video', methods=['POST'])
-def add_video():
+def add_video(course_id):
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
     
-    course_id = request.form['course_id']
+    title = request.form['title']
+    duration = request.form['duration']
+    file = request.files.get('video_file')
+    video_url = None
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        video_url = f'/static/videos/{filename}'
+    else:
+        flash('Invalid file type or no file uploaded!')
+        return redirect(url_for('course_details', course_id=course_id))
     lesson_data = {
-        'title': request.form['title'],
-        'video_url': request.form['video_url'],
-        'duration': request.form['duration'],
+        'title': title,
+        'video_url': video_url,
+        'duration': duration,
         'added_at': datetime.now()
     }
-    
     courses_collection.update_one(
         {'_id': ObjectId(course_id)},
         {'$push': {'lessons': lesson_data}}
     )
-    
     flash('Video added successfully!')
     return redirect(url_for('course_details', course_id=course_id))
 
